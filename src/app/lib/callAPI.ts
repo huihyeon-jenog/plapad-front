@@ -1,4 +1,5 @@
 import {deleteToken, getToken} from "@/app/lib/session";
+import {deleteUserInfo} from "@/app/lib/clientSession";
 
 export default async function callAPI<T>(
   method: "GET" | "POST" | "PUT" | "DELETE",
@@ -23,9 +24,17 @@ export default async function callAPI<T>(
   if (!response.ok) {
     if (response.status === 401) {
       await deleteToken();
+      deleteUserInfo();
     }
     throw new Error(`API Error: ${response.status}`);
   }
 
-  return response.json();
+
+  const contentType = response.headers.get("content-type");
+
+  if (contentType && contentType.includes("application/json")) {
+    return await response.json(); // ✅ JSON 응답 처리
+  } else {
+    return await response.text(); // ✅ JSON이 아니면 text로 반환
+  }
 }

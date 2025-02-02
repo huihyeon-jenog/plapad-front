@@ -29,12 +29,7 @@ export default function RootLayout({
     <body
       className={`${geistSans.variable} ${geistMono.variable} h-screen`}
     >
-      <div className="flex h-full">
-        <Sidebar/>
-        <div className="p-[24px]">
-          {children}
-        </div>
-      </div>
+      {children}
     </body>
     </html>
   );

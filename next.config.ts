@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
       {
         hostname: 'k.kakaocdn.net',
       },
+      {
+        hostname: 'phinf.pstatic.net',
+      },
     ],
   },
 };

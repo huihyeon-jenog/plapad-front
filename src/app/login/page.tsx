@@ -4,7 +4,7 @@ import Link from "next/link";
 import {useState} from "react";
 import Loading from "@/components/Loading";
 
-export default function SignInPage(props: any) {
+export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   return (
@@ -99,5 +99,3 @@ export default function SignInPage(props: any) {
     </div>
   )
 }
-
-// https://accounts.google.com/o/oauth2/v2/auth

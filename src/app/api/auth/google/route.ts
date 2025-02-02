@@ -1,4 +1,4 @@
-import {createToken, deleteUserInfo, setUserInfo} from "@/app/lib/session";
+import {createToken} from "@/app/lib/session";
 import {redirect} from "next/navigation";
 
 export async function GET(request:Request) {
@@ -10,7 +10,7 @@ export async function GET(request:Request) {
     code
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/users`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/login`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -22,10 +22,8 @@ export async function GET(request:Request) {
   if (response.ok) {
     const user = await response.json();
     await createToken(user.data.token);
-    // await setUserInfo(user.data);
     return Response.json({status: 'success'}, redirect("/"));
   } else {
-    // await deleteUserInfo();
     return Response.json({status: 'fail'}, redirect("/login"));
   }
 }
