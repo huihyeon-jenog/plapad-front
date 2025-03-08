@@ -1,22 +1,20 @@
-"use client"
-import useEmblaCarousel from 'embla-carousel-react'
+"use client";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 export default function Slider() {
-  const [emblaRef] = useEmblaCarousel()
-  const slides = [1, 2, 3, 4, 5];
-
-  return (
-    <section className="embla">
-      123
-      <div className="embla__viewport" ref={emblaRef}>
-        <div className="embla__container">
-          {slides.map((index) => (
-            <div className="embla__slide" key={index}>
-              <div className="embla__slide__number">{index + 1}</div>
-            </div>
-          ))}
+    return (
+        <div>
+            <Swiper
+                spaceBetween={50}
+                slidesPerView={3}
+                onSlideChange={() => console.log("slide change")}
+                onSwiper={(swiper) => console.log(swiper)}
+            >
+                <SwiperSlide>Slide 1</SwiperSlide>
+                <SwiperSlide>Slide 2</SwiperSlide>
+                <SwiperSlide>Slide 3</SwiperSlide>
+                <SwiperSlide>Slide 4</SwiperSlide>
+            </Swiper>
         </div>
-      </div>
-    </section>
-  )
+    );
 }

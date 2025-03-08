@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
       {
         hostname: 'phinf.pstatic.net',
       },
+      {
+        hostname: 'lh3.googleusercontent.com'
+      }
     ],
   },
 };
