@@ -2,7 +2,7 @@ import { deleteToken, getToken } from '@/app/lib/session';
 import { deleteUserInfo } from '@/app/lib/clientSession';
 
 export default async function callAPI<T>(
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
   endPoint: string,
   body?: Record<string, any>,
   headers: Record<string, string> = {}

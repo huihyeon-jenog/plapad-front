@@ -5,35 +5,76 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '../LoadingButton';
 import callAPI from '@/app/lib/callAPI';
+import { toast } from 'sonner';
+import { Button } from '../ui/button';
+import { usePathname, useRouter } from 'next/navigation';
+import { FolderData } from '@/lib/data';
 
 // 📌 Zod로 유효성 검사 스키마 정의
 const formSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1),
   colorCode: z.string(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
 
-export default function FolderForm({ onClose }: { onClose: () => void }) {
+export default function FolderForm({
+  onClose,
+  mode,
+  folderData,
+}: {
+  onClose: () => void;
+  mode: string;
+  folderData?: FolderData | null;
+}) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<FormSchema>({
+    defaultValues: {
+      name: mode === 'UPDATE' ? folderData?.name : '',
+      colorCode: mode === 'UPDATE' ? folderData?.colorCode : '',
+    },
     resolver: zodResolver(formSchema),
   });
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const folderId = pathname.split('/')[2];
 
   const onSubmit = async (data: FormSchema) => {
     try {
       await callAPI('POST', 'folder', data);
 
-      alert('성공적으로 제출되었습니다!');
+      toast.success('폴더가 추가되었어요.');
+      router.replace('/notebook');
+      onClose();
     } catch (error) {
+      toast.error(`폴더 추가에 실패했어요.`);
       alert(error);
     }
   };
 
-  console.log(isSubmitting, 'isSubmitting');
+  const onUpdate = async (data: FormSchema) => {
+    const id = folderData?.id;
+
+    try {
+      if (id) {
+        await callAPI('PATCH', `folder/${id}`, data);
+
+        toast.success('폴더가 수정되었어요.');
+        router.replace(`/notebook/${id}`);
+        onClose();
+      } else {
+        throw new Error(`폴더 아이디가 없어요.`);
+      }
+    } catch (error) {
+      toast.error(`폴더 수정에 실패했어요.`);
+      alert(error);
+    }
+  };
+
   return (
     <div
       id="authentication-modal"
@@ -44,7 +85,9 @@ export default function FolderForm({ onClose }: { onClose: () => void }) {
       <div className="relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 w-full max-w-md max-h-full">
         <div className="relative w-[500px] bg-white rounded-lg shadow-sm ">
           <div className="flex items-center justify-between p-4 md:p-5 rounded-t">
-            <h3 className="text-xl font-semibold">폴더 추가</h3>
+            <h3 className="text-xl font-semibold">
+              {mode === 'UPDATE' ? '폴더 수정' : '폴더 추가'}
+            </h3>
             <button
               type="button"
               className="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -70,7 +113,10 @@ export default function FolderForm({ onClose }: { onClose: () => void }) {
             </button>
           </div>
           <div className="p-4 md:p-5">
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 space-y-4">
+            <form
+              onSubmit={handleSubmit(mode === 'UPDATE' ? onUpdate : onSubmit)}
+              className="flex flex-col gap-4 space-y-4"
+            >
               <div>
                 <input
                   type="text"
@@ -243,21 +289,12 @@ export default function FolderForm({ onClose }: { onClose: () => void }) {
                 </li>
               </ul>
               <div className="flex gap-2 justify-center">
-                <button
-                  type="button"
-                  className="w-[80px] border border-gray-300 hover:brightness-90 focus:ring-1 focus:outline-none focus:ring-primary-color font-medium rounded-lg text-sm px-5 py-2 text-center"
-                  onClick={onClose}
-                >
+                <Button variant={'secondary'} className="w-[80px]" onClick={onClose}>
                   취소
-                </button>
-                <button
-                  type="submit"
-                  className="flex w-[80px] text-white bg-primary-color hover:brightness-90 focus:ring-1 focus:outline-none focus:ring-primary-color font-medium rounded-lg text-sm px-5 py-2 text-center"
-                  disabled={isSubmitting}
-                >
-                  추가
-                  {!isSubmitting && <LoadingButton />}
-                </button>
+                </Button>
+                <Button disabled={isSubmitting} className="w-[80px]">
+                  {!isSubmitting ? '추가' : <LoadingButton />}
+                </Button>
               </div>
             </form>
           </div>

@@ -1,14 +1,12 @@
-import Sidebar from "@/components/Sidebar";
+import Sidebar from '@/components/Sidebar';
+import { Toaster } from 'sonner';
 
-export default function Layout({children}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-full">
-      <Sidebar/>
-      <div className="w-full p-[24px]">
-        {children}
-      </div>
+      <Toaster />
+      <Sidebar />
+      <div className="w-full p-[24px]">{children}</div>
     </div>
   );
 }
