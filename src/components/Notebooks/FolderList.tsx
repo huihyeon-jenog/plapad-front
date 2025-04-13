@@ -2,31 +2,76 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { FolderData } from '@/lib/data';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  horizontalListSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
+import { SortableItem } from './SortableItem';
+import callAPI from '@/app/lib/callAPI';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function FolderList({
-  items,
+  activeId,
+  items = [],
   onOpen,
-  onFolderData,
 }: {
+  activeId: undefined | string | string[];
   items: FolderData[];
   onOpen: () => void;
-  onFolderData: (data: FolderData) => void;
 }) {
+  const [folder, setFolders] = useState(items);
   const router = useRouter();
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-  const onFolderClick = (id: number) => {
-    const getData = items.find(item => item.id === id);
+  const setFolderOrder = async (target: FolderData, next: FolderData) => {
+    try {
+      if (target && next) {
+        const param = {
+          targetOrder: target.folderOrder,
+          nextOrder: next.folderOrder,
+        };
 
-    onFolderData(
-      getData ?? {
-        id: 0,
-        name: '',
-        colorCode: '',
-        folderOrder: 0,
+        await callAPI('PATCH', `folder/${target.id}`, param);
+        toast.success('폴더가 수정되었어요.');
       }
-    );
-    router.replace(`/notebook/${id}`);
+    } catch (e) {
+      toast.success('폴더 수정에 실패했어요.');
+      console.error(`API 호출 실패 ${e}`);
+    }
   };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = folder.findIndex(folder => folder.id === active.id);
+      const newIndex = folder.findIndex(folder => folder.id === over?.id);
+      setFolders(arrayMove(folder, oldIndex, newIndex));
+      setFolderOrder(folder[oldIndex], folder[newIndex]);
+    }
+  };
+
+  useEffect(() => {
+    setFolders(items);
+  }, [items]);
 
   return (
     <div className="flex my-4 items-center space-x-2 px-2 w-full">
@@ -51,24 +96,31 @@ export default function FolderList({
         </svg>
       </Button>
 
-      <div className="flex overflow-x-auto space-x-2 scrollbar-hide">
+      <div className="w-full flex overflow-x-auto overflow-y-hidden space-x-2 scrollbar-hide">
         <Button
-          variant="outline"
+          variant={activeId === undefined ? undefined : 'outline'}
           className={`rounded-2xl py-1`}
           onClick={() => router.replace(`/notebook/`)}
         >
           전체
         </Button>
-        {items?.map((folder, index) => (
-          <Button
-            key={index}
-            variant="outline"
-            className={`rounded-2xl py-1`}
-            onClick={() => onFolderClick(folder.id)}
+        <div className="w-full flex gap-2">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToHorizontalAxis]}
           >
-            {folder.name}
-          </Button>
-        ))}
+            <SortableContext
+              items={folder?.map(f => f.id)}
+              strategy={horizontalListSortingStrategy}
+            >
+              {folder?.map(item => (
+                <SortableItem key={item.id} folder={item} activeId={activeId as string} />
+              ))}
+            </SortableContext>
+          </DndContext>
+        </div>
       </div>
     </div>
   );

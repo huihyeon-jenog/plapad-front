@@ -1,41 +1,57 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import FolderForm from './FolderForm';
 import FolderList from './FolderList';
-import { FolderData } from '@/lib/data';
+import { fetchFolders, FolderData } from '@/lib/data';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
+import useSWR from 'swr';
 
-export default function FolderManagement({ items }: { items: FolderData[] }) {
+export default function FolderManagement() {
+  const { id } = useParams();
+  const { data, mutate } = useSWR('/api/folders', fetchFolders);
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState('INSERT');
   const [folderData, setFolderData] = useState<FolderData | null>(null);
   const pathname = usePathname();
   const folderId = pathname.split('/')[2];
+  const folders = useMemo(() => data ?? [], [data]);
 
   const onOpen = (mode: 'INSERT' | 'UPDATE') => {
-    setMode(mode);
-    setIsOpen(true);
+    getFolderData();
+
+    setTimeout(() => {
+      setMode(mode);
+      setIsOpen(true);
+    }, 100);
   };
 
   const onClose = () => {
     setIsOpen(false);
   };
 
-  const onFolderData = (data: FolderData) => {
-    console.log(data, 'datra');
-    setFolderData(data);
+  const getFolderData = () => {
+    const getData = data?.find((item: FolderData) => item.id === Number(id));
+
+    setFolderData(
+      getData ?? {
+        id: 0,
+        name: '',
+        colorCode: '',
+        folderOrder: 0,
+      }
+    );
   };
 
   return (
     <>
       <div className="flex justify-between items-center px-4">
-        <FolderList items={items} onOpen={() => onOpen('INSERT')} onFolderData={onFolderData} />
+        <FolderList activeId={id} items={folders} onOpen={() => onOpen('INSERT')} />
         <DropdownMenu>
           <DropdownMenuTrigger>
             <svg
@@ -60,7 +76,9 @@ export default function FolderManagement({ items }: { items: FolderData[] }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {isOpen && <FolderForm onClose={onClose} mode={mode} folderData={folderData} />}
+      {isOpen && (
+        <FolderForm onClose={onClose} mode={mode} folderData={folderData} mutate={mutate} />
+      )}
     </>
   );
 }

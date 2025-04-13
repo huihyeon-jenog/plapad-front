@@ -7,7 +7,6 @@ import LoadingButton from '../LoadingButton';
 import callAPI from '@/app/lib/callAPI';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import { usePathname, useRouter } from 'next/navigation';
 import { FolderData } from '@/lib/data';
 
 // 📌 Zod로 유효성 검사 스키마 정의
@@ -21,34 +20,33 @@ type FormSchema = z.infer<typeof formSchema>;
 export default function FolderForm({
   onClose,
   mode,
+  mutate,
   folderData,
 }: {
   onClose: () => void;
   mode: string;
+  mutate: () => void;
   folderData?: FolderData | null;
 }) {
   const {
     register,
     handleSubmit,
     formState: { isSubmitting },
+    watch,
   } = useForm<FormSchema>({
     defaultValues: {
       name: mode === 'UPDATE' ? folderData?.name : '',
-      colorCode: mode === 'UPDATE' ? folderData?.colorCode : '',
+      colorCode: mode === 'UPDATE' ? folderData?.colorCode : '#D3D3D3',
     },
     resolver: zodResolver(formSchema),
   });
-
-  const router = useRouter();
-  const pathname = usePathname();
-  const folderId = pathname.split('/')[2];
 
   const onSubmit = async (data: FormSchema) => {
     try {
       await callAPI('POST', 'folder', data);
 
       toast.success('폴더가 추가되었어요.');
-      router.replace('/notebook');
+      mutate();
       onClose();
     } catch (error) {
       toast.error(`폴더 추가에 실패했어요.`);
@@ -64,7 +62,7 @@ export default function FolderForm({
         await callAPI('PATCH', `folder/${id}`, data);
 
         toast.success('폴더가 수정되었어요.');
-        router.replace(`/notebook/${id}`);
+        mutate();
         onClose();
       } else {
         throw new Error(`폴더 아이디가 없어요.`);
@@ -74,6 +72,8 @@ export default function FolderForm({
       alert(error);
     }
   };
+
+  console.log(mode, folderData, watch('colorCode')); // 현재 선택된 값 확인
 
   return (
     <div
@@ -133,7 +133,6 @@ export default function FolderForm({
                     {...register('colorCode')}
                     id="folder-color-light-gray"
                     value="#D3D3D3"
-                    defaultChecked
                   ></input>
                   <label
                     htmlFor="folder-color-light-gray"
