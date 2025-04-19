@@ -8,6 +8,7 @@ import callAPI from '@/app/lib/callAPI';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { FolderData } from '@/lib/data';
+import { useRouter } from 'next/navigation';
 
 // 📌 Zod로 유효성 검사 스키마 정의
 const formSchema = z.object({
@@ -28,11 +29,12 @@ export default function FolderForm({
   mutate: () => void;
   folderData?: FolderData | null;
 }) {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     formState: { isSubmitting },
-    watch,
   } = useForm<FormSchema>({
     defaultValues: {
       name: mode === 'UPDATE' ? folderData?.name : '',
@@ -43,10 +45,15 @@ export default function FolderForm({
 
   const onSubmit = async (data: FormSchema) => {
     try {
-      await callAPI('POST', 'folder', data);
-
+      const response = await callAPI('POST', 'folder', data);
+      const { data: responseData } = response;
+      const { id } = responseData;
       toast.success('폴더가 추가되었어요.');
-      mutate();
+
+      if (id) {
+        mutate();
+        router.push(`/notebook?folder=${id}`);
+      }
       onClose();
     } catch (error) {
       toast.error(`폴더 추가에 실패했어요.`);
@@ -72,8 +79,6 @@ export default function FolderForm({
       alert(error);
     }
   };
-
-  console.log(mode, folderData, watch('colorCode')); // 현재 선택된 값 확인
 
   return (
     <div

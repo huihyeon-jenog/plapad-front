@@ -18,7 +18,7 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
-import { SortableItem } from './SortableItem';
+import { FolderItem } from './FolderItem';
 import callAPI from '@/app/lib/callAPI';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -28,7 +28,7 @@ export default function FolderList({
   items = [],
   onOpen,
 }: {
-  activeId: undefined | string | string[];
+  activeId: string | null;
   items: FolderData[];
   onOpen: () => void;
 }) {
@@ -98,7 +98,7 @@ export default function FolderList({
 
       <div className="w-full flex overflow-x-auto overflow-y-hidden space-x-2 scrollbar-hide">
         <Button
-          variant={activeId === undefined ? undefined : 'outline'}
+          variant={activeId === null ? undefined : 'outline'}
           className={`rounded-2xl py-1`}
           onClick={() => router.replace(`/notebook/`)}
         >
@@ -116,7 +116,7 @@ export default function FolderList({
               strategy={horizontalListSortingStrategy}
             >
               {folder?.map(item => (
-                <SortableItem key={item.id} folder={item} activeId={activeId as string} />
+                <FolderItem key={item.id} folder={item} activeId={activeId as string} />
               ))}
             </SortableContext>
           </DndContext>

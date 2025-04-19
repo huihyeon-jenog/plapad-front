@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 import { FolderData } from '@/lib/data';
 
-export function SortableItem(props: { folder: FolderData; activeId: string }) {
+export function FolderItem(props: { folder: FolderData; activeId: string }) {
   const router = useRouter();
 
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
@@ -25,7 +25,7 @@ export function SortableItem(props: { folder: FolderData; activeId: string }) {
       <Button
         variant={Number(activeId) === folderData.id ? undefined : 'outline'}
         className={`rounded-2xl py-1`}
-        onClick={() => router.replace(`/notebook/${folderData.id}`)}
+        onClick={() => router.replace(`/notebook?folder=${folderData.id}`)}
       >
         {folderData.name}
         <span {...listeners} className="cursor-grab">

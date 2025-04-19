@@ -9,17 +9,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useParams, usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 
 export default function FolderManagement() {
-  const { id } = useParams();
+  const searchParams = useSearchParams();
+  const id = searchParams.get('folder');
   const { data, mutate } = useSWR('/api/folders', fetchFolders);
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState('INSERT');
   const [folderData, setFolderData] = useState<FolderData | null>(null);
-  const pathname = usePathname();
-  const folderId = pathname.split('/')[2];
   const folders = useMemo(() => data ?? [], [data]);
 
   const onOpen = (mode: 'INSERT' | 'UPDATE') => {
@@ -70,7 +69,7 @@ export default function FolderManagement() {
             </svg>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem disabled={folderId === undefined} onClick={() => onOpen('UPDATE')}>
+            <DropdownMenuItem disabled={id === undefined} onClick={() => onOpen('UPDATE')}>
               폴더 수정
             </DropdownMenuItem>
           </DropdownMenuContent>

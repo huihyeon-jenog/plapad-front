@@ -8,10 +8,11 @@ export interface FolderData {
 }
 
 export interface MemoData {
-  id: number;
+  id: string;
+  colorCode: string;
   folderId: number;
   memoOrder: number;
-  contents: string;
+  content: string;
   fixed: boolean;
   tags: [];
   title: string;

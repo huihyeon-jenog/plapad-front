@@ -14,7 +14,7 @@ import TagIcon from '@/components/Icons/Tag';
 import LogoutIcon from '@/components/Icons/Logout';
 import SettingIcon from '@/components/Icons/Setting';
 import { setUserInfo } from '@/app/lib/clientSession';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from './ui/button';
 import { Pencil } from 'lucide-react';
 
@@ -77,16 +77,16 @@ export default function Sidebar() {
     }
   };
 
-  const pathname = usePathname(); // e.g. '/notebook/10'
-  const match = pathname.match(/^\/notebook\/(\d+)/);
-  const notebookId = match?.[1] ?? 0;
+  const searchParams = useSearchParams();
+  const folder = searchParams.get('folder');
+  const memoLink = folder ? `/notebook/create?folder=${folder}` : '/notebook/create';
 
   return (
     <nav className="inline-flex flex-col w-[266px] p-[24px] border-r shadow bg-light-gray-1">
       {isLoading && <Loading />}
       <UserProfile user={user} />
       <div className="flex flex-col justify-between h-full">
-        <Link href={`/notebook/${notebookId}/notes/create`} className="mb-4">
+        <Link href={memoLink} className="mb-4">
           <Button className="w-full text-base font-semibold py-6 rounded-xl bg-primary text-white hover:bg-primary/90 transition">
             <Pencil className="mr-2 h-4 w-4" />
             메모쓰기
