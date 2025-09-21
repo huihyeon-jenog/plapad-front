@@ -5,9 +5,9 @@ export default async function Page({ searchParams }: { searchParams: { folder: s
   const { folder: folderId } = await searchParams;
 
   return (
-    <div className="grid grid-cols-6 gap-4">
+    <main className="grid grid-cols-6 gap-4">
       <CardList folderId={folderId} />
       <MemoDetailModal />
-    </div>
+    </main>
   );
 }

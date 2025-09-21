@@ -1,5 +1,9 @@
-export default async function Page() {
-  return <h2>
-    Calendar
-  </h2>
+import CalendarView from '@/components/Calendar/CalendarView';
+
+export default function CalendarPage() {
+  return (
+    <main>
+      <CalendarView />
+    </main>
+  );
 }

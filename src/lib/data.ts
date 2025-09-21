@@ -18,6 +18,11 @@ export interface MemoData {
   title: string;
 }
 
+export interface GroupData {
+  id: number;
+  name: string;
+}
+
 export const fetchFolders = async () => {
   const response = await callAPI('GET', 'folders');
 
@@ -32,6 +37,12 @@ export const fetchMemos = async () => {
 
 export const fetchFolderMemos = async (id: string) => {
   const response = await callAPI('GET', `folder/${id}/memos`);
+
+  return response.data;
+};
+
+export const fetchGroups = async () => {
+  const response = await callAPI('GET', 'groups');
 
   return response.data;
 };

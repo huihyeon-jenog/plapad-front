@@ -78,28 +78,62 @@ export default function Sidebar() {
   };
 
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const folder = searchParams.get('folder');
   const memoLink = folder ? `/notebook/create?folder=${folder}` : '/notebook/create';
+  const isCalendarPage = pathname.startsWith('/calendar');
 
   return (
-    <nav className="inline-flex flex-col w-[266px] p-[24px] border-r shadow bg-light-gray-1">
+    <nav
+      className={`inline-flex flex-col w-[266px] p-[24px] border-r shadow bg-light-gray-1 
+      ${isCalendarPage ? 'w-20 items-center' : 'w-60'}
+    `}
+    >
       {isLoading && <Loading />}
-      <UserProfile user={user} />
+      <UserProfile user={user} isCalendarPage={isCalendarPage} />
       <div className="flex flex-col justify-between h-full">
-        <Link href={memoLink} className="mb-4">
-          <Button className="w-full text-base font-semibold py-6 rounded-xl bg-primary text-white hover:bg-primary/90 transition">
-            <Pencil className="mr-2 h-4 w-4" />
-            메모쓰기
-          </Button>
-        </Link>
-        <NavLinks />
-        <LogoutButton logout={logout} />
+        {!isCalendarPage && (
+          <Link href={memoLink} className="mb-4">
+            <Button className="w-full text-base font-semibold py-6 rounded-xl bg-primary text-white hover:bg-primary/90 transition">
+              <Pencil className="mr-2 h-4 w-4" />
+              메모쓰기
+            </Button>
+          </Link>
+        )}
+        <NavLinks isCalendarPage={isCalendarPage} />
+        <LogoutButton logout={logout} isCalendarPage={isCalendarPage} />
       </div>
     </nav>
   );
 }
 
-const UserProfile = ({ user }: { user: Record<string, string> }) => {
+const UserProfile = ({
+  user,
+  isCalendarPage,
+}: {
+  user: Record<string, string>;
+  isCalendarPage: boolean;
+}) => {
+  const router = useRouter();
+
+  if (isCalendarPage) {
+    return (
+      <div className="flex gap-[12px] mb-[44px]">
+        <button
+          type="button"
+          className="relative inline-flex items-center shrink-0 justify-center w-[56px] h-[56px] rounded-[16px] dark:bg-gray-600 overflow-hidden"
+          onClick={() => router.push('/profile')}
+        >
+          {user.avatar ? (
+            <Image src={user.avatar} alt={'사용자 프로필'} width={56} height={56} />
+          ) : (
+            <span className="font-medium text-gray-600 dark:text-gray-300">{user.name[0]}</span>
+          )}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-[12px] mb-[44px]">
       <div className="relative inline-flex items-center shrink-0 justify-center w-[56px] h-[56px] rounded-[16px] dark:bg-gray-600 overflow-hidden">
@@ -109,7 +143,7 @@ const UserProfile = ({ user }: { user: Record<string, string> }) => {
           <span className="font-medium text-gray-600 dark:text-gray-300">{user.name[0]}</span>
         )}
       </div>
-      <div className="flex flex-col justify-center w-[150px]">
+      <div className="flex flex-col justify-center overflow-hidden">
         <div className="flex justify-between">
           <strong className="">{user.name}</strong>
           <Link href={'/profile'} className="flex items-center transition duration-200">
@@ -122,7 +156,8 @@ const UserProfile = ({ user }: { user: Record<string, string> }) => {
   );
 };
 
-const NavLinks = () => {
+const NavLinks = (props: { isCalendarPage: boolean }) => {
+  const { isCalendarPage } = props;
   const links = [
     { href: '/', icon: <HomeIcon />, label: 'Home' },
     { href: '/notebook', icon: <NotebookIcon />, label: 'Notebooks' },
@@ -147,7 +182,7 @@ const NavLinks = () => {
                 } flex gap-[16px] p-[16px] hover:bg-light-gray-2 hover:text-primary-color rounded-[16px]`}
               >
                 {link.icon}
-                {link.label}
+                {!isCalendarPage && link.label}
               </Link>
             </li>
           );
@@ -157,7 +192,13 @@ const NavLinks = () => {
   );
 };
 
-const LogoutButton = ({ logout }: { logout: () => void }) => {
+const LogoutButton = ({
+  logout,
+  isCalendarPage,
+}: {
+  logout: () => void;
+  isCalendarPage: boolean;
+}) => {
   return (
     <ul>
       <li>
@@ -166,7 +207,7 @@ const LogoutButton = ({ logout }: { logout: () => void }) => {
           onClick={logout}
         >
           <LogoutIcon />
-          Logout
+          {!isCalendarPage && 'Logout'}
         </button>
       </li>
     </ul>
